@@ -1,17 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   BookmarkIcon,
   BookOpenIcon,
   TrashIcon,
+  PlusCircleIcon,
 } from "@heroicons/react/24/outline";
 const Main = () => {
-  const [tabs, setTabs] = useState([
-    "www.github.com/aziz-codes",
-    "www.linkdin.com/aziz-codes",
-    "www.twitter.com/aziz-codes",
-    "www.instagram.com/aziz-codes",
-    "www.facebook.com/aziz-codes",
-  ]);
+  const [tabs, setTabs] = useState([]);
+  const [address, setAddress] = useState("");
+
+  useEffect(() => {
+    let links = JSON.parse(localStorage.getItem("links"));
+    if (links) {
+      setTabs(links);
+    } else {
+      console.log("no link found");
+    }
+  }, []);
+  const handleSave = () => {
+    if (address.length < 3) {
+      console.log("NO");
+    } else {
+      if (tabs.includes(address)) {
+        console.log("This link already exists");
+      } else {
+        setTabs([...tabs, address]);
+        localStorage.setItem("links", JSON.stringify(tabs));
+        setAddress("");
+      }
+    }
+  };
   return (
     <div
       className="min-w-[400px] flex
@@ -19,11 +37,19 @@ const Main = () => {
     >
       <div className="flex flex-row items-center mt-5 border ml-5 mr-5 rounded-md">
         <input
+          defaultValue={address}
           type="text"
           className="outline-none  rounded-md p-1 w-96 mr-4 ml-4 "
           placeholder="Enter custom address"
+          onChange={(e) => {
+            setAddress(e.target.value);
+          }}
         />
-        <BookOpenIcon className="h-6 w-6 cursor-pointer" title="Save" />
+        <PlusCircleIcon
+          className="h-6 w-6 cursor-pointer hover:text-sky-500"
+          title="Save"
+          onClick={handleSave}
+        />
       </div>
       <div className="flex flex-row gap-4 w-full justify-between px-5 ">
         <BookmarkIcon
@@ -44,8 +70,8 @@ const Main = () => {
       <div className="p-1 flex flex-col gap-4 mx-4 min-h-[600px] overflow-y-auto">
         {tabs.map((tab, i) => (
           <div className="flex flex-row  gap-3  w-96" key={i}>
-            <TrashIcon className="h-6 w-6 cursor-pointer hover:text-red-500" />
-            <a href={tab} className="hover:text-sky-500 transition-all">
+            <TrashIcon className="h-5 w-5 cursor-pointer hover:text-red-500" />
+            <a href={tab} className="hover:text-sky-500 transition-all text-sm">
               {tab}
             </a>
           </div>
