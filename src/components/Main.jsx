@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import {
   BookmarkIcon,
   BookOpenIcon,
@@ -8,8 +8,9 @@ import {
 const Main = () => {
   const [tabs, setTabs] = useState([]);
   const [address, setAddress] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     let links = JSON.parse(localStorage.getItem("links"));
     if (links) {
       setTabs(links);
@@ -17,17 +18,24 @@ const Main = () => {
       console.log("no link found");
     }
   }, []);
+  const errorHandler = (msg) => {
+    // const intervalId = setInterval(() => {
+    setErrorMessage(msg);
+    // }, 3000);
+    // clearInterval(intervalId);
+  };
+  // handler for saving links
   const handleSave = () => {
-    if (address.length < 3) {
-      console.log("NO");
+    if (tabs.includes(address)) {
+      errorHandler("This tab already exists");
+    } else if (address.length < 4) {
+      errorHandler("Link is too short");
+      console.log("This tab already lenght");
     } else {
-      if (tabs.includes(address)) {
-        console.log("This link already exists");
-      } else {
-        setTabs([...tabs, address]);
-        localStorage.setItem("links", JSON.stringify(tabs));
-        setAddress("");
-      }
+      const newTabs = [...tabs, address];
+      setTabs(newTabs);
+      localStorage.setItem("links", JSON.stringify(newTabs));
+      setAddress("");
     }
   };
   return (
@@ -67,6 +75,10 @@ const Main = () => {
         </div>
       </div>
       <div className="w-full  border"></div>
+
+      {errorMessage && (
+        <p className="p-1 text-xs text-red-500">{errorMessage}ok</p>
+      )}
       <div className="p-1 flex flex-col gap-4 mx-4 min-h-[600px] overflow-y-auto">
         {tabs.map((tab, i) => (
           <div className="flex flex-row  gap-3  w-96" key={i}>
