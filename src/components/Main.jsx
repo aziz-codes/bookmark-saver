@@ -1,19 +1,14 @@
-import React, { useState, useEffect, useLayoutEffect } from "react";
-import {
-  BookmarkIcon,
-  BookOpenIcon,
-  TrashIcon,
-  PlusCircleIcon,
-} from "@heroicons/react/24/outline";
+import React, { useState, useLayoutEffect } from "react";
+import { TrashIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
 const Main = () => {
-  const [tabs, setTabs] = useState([]);
+  const [myTabs, setMyTabs] = useState([]);
   const [address, setAddress] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
   useLayoutEffect(() => {
     let links = JSON.parse(localStorage.getItem("links"));
     if (links) {
-      setTabs(links);
+      setMyTabs(links);
     } else {
       console.log("no link found");
     }
@@ -26,23 +21,23 @@ const Main = () => {
   };
   // handler for saving links
   const handleSave = () => {
-    if (tabs.includes(address)) {
+    if (myTabs.includes(address)) {
       errorHandler("This tab already exists");
     } else if (address.length < 4) {
       errorHandler("Link is too short");
-      console.log("This tab already lenght");
     } else {
-      const newTabs = [...tabs, address];
-      setTabs(newTabs);
+      const newTabs = [...myTabs, address];
+      setMyTabs(newTabs);
       localStorage.setItem("links", JSON.stringify(newTabs));
-      setAddress("");
+      // setAddress("");
+      errorHandler("");
     }
   };
   // handler to remove single tab
   const handleSingleLinkDelete = (tab) => {
-    const filteredLinks = tabs.filter((item) => item !== tab);
+    const filteredLinks = myTabs.filter((item) => item !== tab);
 
-    setTabs(filteredLinks);
+    setMyTabs(filteredLinks);
 
     localStorage.setItem("links", JSON.stringify(filteredLinks));
   };
@@ -51,7 +46,15 @@ const Main = () => {
 
   const handleDeleteAll = () => {
     localStorage.clear();
-    setTabs([]);
+    setMyTabs([]);
+  };
+
+  const handleAddCurrentTab = () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      // myLeads.push(tabs[0].url);
+      setMyTabs([...myTabs, tabs[0].url]);
+      localStorage.setItem("links", JSON.stringify(myTabs));
+    });
   };
 
   return (
@@ -76,13 +79,15 @@ const Main = () => {
         />
       </div>
       <div className="flex flex-row gap-4 w-full justify-between px-5 ">
-        <BookmarkIcon
-          className="h-7 w-7 hover:text-sky-500 cursor-pointer"
-          title="Save current tab"
-        />
+        <button
+          className="rounded-sm bg-sky-500 text-sm text-white p-1 font-semibold"
+          onClick={handleAddCurrentTab}
+        >
+          Save Current Tab
+        </button>
         <div className="flex gap-4">
           <label className="text-sky-500 text-xs font-semibold">
-            Count: <span className="text-black">{tabs.length}</span>
+            Count: <span className="text-black">{myTabs.length}</span>
           </label>
           <TrashIcon
             className="h-4 w-4 cursor-pointer hover:text-red-500"
@@ -94,22 +99,27 @@ const Main = () => {
       <div className="w-full  border"></div>
 
       {errorMessage && (
-        <p className="p-1 text-xs text-red-500">{errorMessage}ok</p>
+        <p className="p-1 text-xs text-red-500">{errorMessage}</p>
       )}
       <div className="p-1 flex flex-col gap-4 mx-4 min-h-[600px] overflow-y-auto">
-        {tabs.map((tab, i) => (
-          <div className="flex flex-row  gap-3  w-96" key={i}>
-            <TrashIcon
-              className="h-5 w-5 cursor-pointer hover:text-red-500"
-              onClick={() => {
-                handleSingleLinkDelete(tab);
-              }}
-            />
-            <a href={tab} className="hover:text-sky-500 transition-all text-sm">
-              {tab}
-            </a>
-          </div>
-        ))}
+        {myTabs.length > 0
+          ? myTabs.map((tab, i) => (
+              <div className="flex flex-row  gap-3  w-96" key={i}>
+                <TrashIcon
+                  className="h-5 w-5 cursor-pointer hover:text-red-500"
+                  onClick={() => {
+                    handleSingleLinkDelete(tab);
+                  }}
+                />
+                <a
+                  href={tab}
+                  className="hover:text-sky-500 transition-all text-sm"
+                >
+                  {tab}
+                </a>
+              </div>
+            ))
+          : "You have't any saved tabs yet."}
       </div>
     </div>
   );
