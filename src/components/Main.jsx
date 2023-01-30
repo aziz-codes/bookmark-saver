@@ -38,6 +38,22 @@ const Main = () => {
       setAddress("");
     }
   };
+  // handler to remove single tab
+  const handleSingleLinkDelete = (tab) => {
+    const filteredLinks = tabs.filter((item) => item !== tab);
+
+    setTabs(filteredLinks);
+
+    localStorage.setItem("links", JSON.stringify(filteredLinks));
+  };
+
+  // handler to remove all tabs.
+
+  const handleDeleteAll = () => {
+    localStorage.clear();
+    setTabs([]);
+  };
+
   return (
     <div
       className="min-w-[400px] flex
@@ -71,6 +87,7 @@ const Main = () => {
           <TrashIcon
             className="h-4 w-4 cursor-pointer hover:text-red-500"
             title="delete all"
+            onClick={handleDeleteAll}
           />
         </div>
       </div>
@@ -82,7 +99,12 @@ const Main = () => {
       <div className="p-1 flex flex-col gap-4 mx-4 min-h-[600px] overflow-y-auto">
         {tabs.map((tab, i) => (
           <div className="flex flex-row  gap-3  w-96" key={i}>
-            <TrashIcon className="h-5 w-5 cursor-pointer hover:text-red-500" />
+            <TrashIcon
+              className="h-5 w-5 cursor-pointer hover:text-red-500"
+              onClick={() => {
+                handleSingleLinkDelete(tab);
+              }}
+            />
             <a href={tab} className="hover:text-sky-500 transition-all text-sm">
               {tab}
             </a>
